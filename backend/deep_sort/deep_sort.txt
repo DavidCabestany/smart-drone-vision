@@ -1,0 +1,13 @@
+Deep SORT (Simple Online and Realtime Tracking with a Deep Association Metric) is an extension of the SORT algorithm for object tracking. It combines traditional tracking algorithms with deep learning-based features for better association of detections across frames.
+
+Key Components:
+
+Kalman Filter: For state estimation and prediction.
+Hungarian Algorithm: For data association, matching detected objects with tracked objects.
+Deep Association Metric: A neural network model to compute appearance features, improving match accuracy.
+Considerations:
+
+Real-Time Capabilities: Good for real-time tracking but may lag with too many objects.
+Data Quality: Performance is influenced by the quality and preprocessing of your dataset.
+Computational Resources: Requires a balance between accuracy and speed, depending on your hardware.
+Deep SORT can be useful in scenarios where you need to track multiple objects over time, like monitoring tree movements in forestry applications given your interest in that sector.
