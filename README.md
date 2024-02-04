@@ -1,5 +1,5 @@
 # Activate environment
 
-activate backend/.venv/Scripts/activate
+source backend/.venv/Scripts/activate
 
 
