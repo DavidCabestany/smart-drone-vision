@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 # Load YOLO
-net = cv2.dnn.readNet("./darknet/cfg/yolov7-tiny.weights", "darknet/cfg/yolov7-tiny.cfg")
+net = cv2.dnn.readNet(".backend/darknet/cfg/yolov5l.weights", "darknet/cfg/yolov5l.cfg")
 layer_names = net.getLayerNames()
 out_layers = net.getUnconnectedOutLayers()
 output_layers = [layer_names[i[0] - 1] if isinstance(i, np.ndarray) else layer_names[i - 1] for i in out_layers]
