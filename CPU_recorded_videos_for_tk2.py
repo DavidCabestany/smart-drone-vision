@@ -1,27 +1,30 @@
-from datetime import datetime
-import torch
-import cv2
 import logging
-import time
 import os
+import time
+from datetime import datetime
+
+import cv2
+import torch
 from dotenv import load_dotenv
-from tqdm import tqdm  # Import tqdm for the progress bar
+from tqdm import tqdm
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # Load environment configurations
 load_dotenv()
-drone = os.getenv('DRONE_NAME', 'your_drone')
-output_dir = os.getenv('OUTPUT_DIR', 'output_videos')
-video_path = os.getenv('VIDEO_PATH', 'path_to_your_video_file.mp4')  # Path to your recorded video
+drone = os.getenv("DRONE_NAME", "your_drone")
+output_dir = os.getenv("OUTPUT_DIR", "output_videos")
+video_path = os.getenv("VIDEO_PATH", "path_to_your_video_file.mp4")
+model_repository = "ultralytics/yolov5"
+model_name = "yolov5x"  # Options: yolov5s, yolov5m, yolov5l, yolov5x
 
-model_repository = 'ultralytics/yolov5'
-model_name = 'yolov5x'  # Choose the model size according to your needs
 
-# Ensure the output directory exists
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
-# Initialize logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 logging.info(f"Starting object detection with {model_name} on recorded video!")
 
 try:
@@ -34,6 +37,7 @@ except Exception as e:
 
 results = None
 
+
 def detect_objects(frame, update_detection):
     global results
     if update_detection:
@@ -45,6 +49,7 @@ def detect_objects(frame, update_detection):
     else:
         frame_bgr = frame
     return frame_bgr
+
 
 # Open the recorded video
 cap = cv2.VideoCapture(video_path)
@@ -63,9 +68,15 @@ unprocessed_output_filename = f"{drone}_{model_name}_UNPROC_{current_time}.avi"
 proc_file_path = os.path.join(output_dir, processed_output_filename)
 unproc_file_path = os.path.join(output_dir, unprocessed_output_filename)
 
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-proc_out = cv2.VideoWriter(proc_file_path, fourcc, source_fps, (frame_width, frame_height))
-# unproc_out = cv2.VideoWriter(unproc_file_path, fourcc, source_fps, (frame_width, frame_height))
+# Define the codec and create VideoWriter objects
+fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # Use 'mp4v' for MP4 file output
+processed_output_filename = f"{drone}_{model_name}_PROC_{current_time}.mp4"
+unprocessed_output_filename = f"{drone}_{model_name}_UNPROC_{current_time}.mp4"
+
+
+proc_out = cv2.VideoWriter(
+    proc_file_path, fourcc, source_fps, (frame_width, frame_height)
+)
 
 detection_interval = 1
 
@@ -87,7 +98,7 @@ try:
 
         pbar.update(1)  # Update the progress bar by one step
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 except KeyboardInterrupt:
     logging.info("Interrupted by user.")
