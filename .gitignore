@@ -667,3 +667,5 @@ fabric.properties
 # My backups and drafts
 
 draft_*
+output/
+tiktok_output/
