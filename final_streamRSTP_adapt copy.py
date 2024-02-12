@@ -6,10 +6,17 @@ import logging
 from imutils.video import VideoStream
 import time
 import os
+from dotenv import load_dotenv
 
 # Setup logging and output directory
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-output_dir = "output"
+
+# Use environment variables for output directory and RTMP URL
+drone = os.getenv('DRONE_NAME', 'unknown')
+output_dir = os.getenv('OUTPUT_DIR', 'output') 
+stream_url = os.getenv('STREAM_URL', 'rtmp://IP_from_Mona_Server/live') 
+
+
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -46,8 +53,8 @@ def process_frame(frame):
     return frame_bgr
 
 
-# RTMP URL (Ensure this is correct for your stream)
-stream_url = 'rtmp://192.168.10.152/live'
+# Start the Stream  through RTSP
+ 
 vs = VideoStream(stream_url).start()
 time.sleep(2.0)
 
