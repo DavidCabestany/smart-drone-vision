@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 from datetime import datetime
 
 import cv2
@@ -17,8 +16,9 @@ load_dotenv()
 drone = os.getenv("DRONE_NAME", "your_drone")
 output_dir = os.getenv("OUTPUT_DIR", "output_videos")
 video_path = os.getenv("VIDEO_PATH", "path_to_your_video_file.mp4")
+
 model_repository = "ultralytics/yolov5"
-model_name = "yolov5x"  # Options: yolov5s, yolov5m, yolov5l, yolov5x
+model_name = "yolov5x"  # Options: 'yolov5s', 'yolov5m', 'yolov5l', 'yolov5x'
 
 
 if not os.path.exists(output_dir):
@@ -63,24 +63,25 @@ frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
 current_time = datetime.now().strftime("%d_%H%M")
-processed_output_filename = f"{drone}_{model_name}_PROC_{current_time}.avi"
-unprocessed_output_filename = f"{drone}_{model_name}_UNPROC_{current_time}.avi"
-proc_file_path = os.path.join(output_dir, processed_output_filename)
-unproc_file_path = os.path.join(output_dir, unprocessed_output_filename)
+
 
 # Define the codec and create VideoWriter objects
 fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # Use 'mp4v' for MP4 file output
 processed_output_filename = f"{drone}_{model_name}_PROC_{current_time}.mp4"
 unprocessed_output_filename = f"{drone}_{model_name}_UNPROC_{current_time}.mp4"
+proc_file_path = os.path.join(output_dir, processed_output_filename)
+unproc_file_path = os.path.join(output_dir, unprocessed_output_filename)
 
 
 proc_out = cv2.VideoWriter(
     proc_file_path, fourcc, source_fps, (frame_width, frame_height)
 )
+unproc_out = cv2.VideoWriter(
+    unproc_file_path, fourcc, source_fps, (frame_width, frame_height)
+)
 
 detection_interval = 1
 
-# Create a tqdm progress bar
 pbar = tqdm(total=total_frames, desc="Processing Frames")
 
 try:
@@ -93,23 +94,26 @@ try:
         update_detection = (total_frames % detection_interval) == 0
         processed_frame = detect_objects(frame, update_detection)
 
-        # unproc_out.write(frame)  # Save original frame to unprocessed video
-        proc_out.write(processed_frame)  # Save processed frame to processed video
+        unproc_out.write(frame)
+        proc_out.write(processed_frame)
 
-        pbar.update(1)  # Update the progress bar by one step
+        pbar.update(1)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
+
 except KeyboardInterrupt:
     logging.info("Interrupted by user.")
+
 finally:
+
     cap.release()
     proc_out.release()
-    # unproc_out.release()
+    unproc_out.release()
     cv2.destroyAllWindows()
     pbar.close()  # Close the progress bar
 
     # Log the full path of the output files
     logging.info(f"Video processing concluded.")
     logging.info(f"Processed video saved to: {os.path.abspath(proc_file_path)}")
-    # logging.info(f"Unprocessed video saved to: {os.path.abspath(unproc_file_path)}")
+    logging.info(f"Unprocessed video saved to: {os.path.abspath(unproc_file_path)}")
