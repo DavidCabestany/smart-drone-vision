@@ -1,3 +1,6 @@
 [submodule "model/utils/darknet"]
 	path = model/utils/darknet
 	url = https://github.com/pjreddie/darknet.git
+[submodule "model/utils/yolov7"]
+	path = model/utils/yolov7
+	url = https://github.com/WongKinYiu/yolov7.git
