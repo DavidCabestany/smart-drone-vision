@@ -1,5 +1,0 @@
-Darknet is a framework designed for training neural networks, primarily aimed at real-time object detection tasks. It was developed by Joseph Redmon and is particularly known for its efficiency and speed, making it suitable for real-time processing. Written in C and CUDA, it is optimized to run on both CPUs and GPUs.
-
-YOLO (You Only Look Once) is one of the most well-known algorithms built on the Darknet framework. Unlike traditional object detection methods that scan an image multiple times with different scales and aspect ratios, YOLO performs detection in a single forward pass through the neural network. This leads to significant speed advantages.
-
-
