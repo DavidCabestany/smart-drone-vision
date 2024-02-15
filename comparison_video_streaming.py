@@ -6,7 +6,7 @@ from imutils.video import VideoStream
 import time
 import os
 from dotenv import load_dotenv
-import os
+import numpy as np
 
 # Load environment configurations
 load_dotenv()
@@ -16,7 +16,7 @@ stream_url = os.getenv('STREAM_URL', 'rtmp://your_stream_url/live')
 
 print(f"Drone: {drone}", f"Output directory: {output_dir}", f"Stream URL: {stream_url}", torch.cuda.is_available(), sep='\n')
 model_repository = 'ultralytics/yolov5'
-model_name = 'yolov5x'  # 'yolov5n','yolov5s', 'yolov5m', 'yolov5l', 'yolov5x'
+model_name = 'yolov8'  # 'yolov5n','yolov5s', 'yolov5m', 'yolov5l', 'yolov5x'
 
 proc_out_dir = os.path.join(output_dir, 'processed_footage')
 unproc_out_dir = os.path.join(output_dir, 'unprocessed_footage')
@@ -31,8 +31,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logging.info(f"Starting object detection with {model_name} on drone video stream!")
 
 try:
-    model = torch.hub.load(model_repository, model_name, pretrained=True)
-    model.conf = 0.60
+    model = torch.hub.load(model_repository, model_name, pretrained=True).to('cuda')
+    model.conf = 0.20
     logging.info(f"{model_name} model loaded successfully.")
 except Exception as e:
     logging.error(f"Failed to load model: {e}")
@@ -89,21 +89,27 @@ try:
         fps = 1 / (current_time - prev_time)
         prev_time = current_time
 
-        # Display FPS on the frame
+        # Display FPS on the processed frame for reference
         cv2.putText(processed_frame, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        # Initialize VideoWriter objects if not already done
+        
         if proc_out is None or unproc_out is None:
             height, width = frame.shape[:2]
-            proc_out = cv2.VideoWriter(proc_file_path, fourcc, fps, (width, height))
-            unproc_out = cv2.VideoWriter(unproc_file_path, fourcc, fps, (width, height))
+            proc_out = cv2.VideoWriter(proc_file_path, fourcc, default_fps, (width, height))
+            unproc_out = cv2.VideoWriter(unproc_file_path, fourcc, default_fps, (width, height))
+
         # Save frames to videos
-        unproc_out.write(frame)  # Save original frame to unprocessed video
-        proc_out.write(processed_frame)  # Save processed frame to processed video
+        unproc_out.write(frame)
+        proc_out.write(processed_frame)
+
+        # Resize processed frame to match the unprocessed frame size if necessary
+        processed_frame_resized = cv2.resize(processed_frame, (width, height))
         
-        # Display the frames
-        cv2.imshow('Processed Stream', processed_frame)
+        # Concatenate frames horizontally
+        combined_frame = np.hstack((frame, processed_frame_resized))
 
-
+        # Display the combined frame
+        cv2.imshow('Stream Comparison', combined_frame)
+        
         frame_count += 1
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
