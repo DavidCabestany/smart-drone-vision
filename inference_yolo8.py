@@ -1,5 +1,19 @@
+# from ultralytics import YOLO
+# model = YOLO('yolov8n.pt')  # Load the pretrained model
+
+# source = 'path/to/image.jpg'  # Path to your image
+# results = model(source)
+
+# for box in results.boxes:
+#     cords = box.xyxy[0].tolist()  # Coordinates of the bounding box
+#     class_id = box.cls[0].item()  # Class ID of the detected object
+#     conf = box.conf[0].item()  # Confidence score
+#     print(f"Object type: {results.names[class_id]}")
+#     print(f"Coordinates: {cords}")
+#     print(f"Probability: {conf}")
+
+
 from datetime import datetime
-import torch
 import cv2
 import logging
 from imutils.video import VideoStream
@@ -7,6 +21,7 @@ import time
 import os
 from dotenv import load_dotenv
 import numpy as np
+from ultralytics import YOLO  # Import YOLO class
 
 # Load environment configurations
 load_dotenv()
@@ -14,9 +29,11 @@ drone = os.getenv('DRONE_NAME', 'your_drone')
 output_dir = os.getenv('OUTPUT_DIR', 'output_videos')
 stream_url = os.getenv('STREAM_URL', 'rtmp://your_stream_url/live')
 
-print(f"Drone: {drone}", f"Output directory: {output_dir}", f"Stream URL: {stream_url}", torch.cuda.is_available(), sep='\n')
-model_repository = 'ultralytics/'
-model_name = 'yolov8'  # 'yolov5n','yolov5s', 'yolov5m', 'yolov5l', 'yolov5x'
+print(f"Drone: {drone}", f"Output directory: {output_dir}", f"Stream URL: {stream_url}", sep='\n')
+
+# Model initialization
+model_name = 'yolov8n'  # Choose model size (n, s, m, l, x)
+model = YOLO(model_name + '.pt')  # Load the model
 
 proc_out_dir = os.path.join(output_dir, 'processed_footage')
 unproc_out_dir = os.path.join(output_dir, 'unprocessed_footage')
@@ -30,24 +47,16 @@ os.makedirs(unproc_out_dir, exist_ok=True)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info(f"Starting object detection with {model_name} on drone video stream!")
 
-try:
-    model = torch.hub.load(model_repository, model_name, pretrained=True).to('cuda')
-    model.conf = 0.20
-    logging.info(f"{model_name} model loaded successfully.")
-except Exception as e:
-    logging.error(f"Failed to load model: {e}")
-    exit()
-
-results = None
-
+# Inference function adapted for YOLOv8
 def detect_objects(frame, update_detection):
-    global results
     if update_detection:
+        # Convert frame to RGB
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = model(frame_rgb)
-        frame_bgr = cv2.cvtColor(results.render()[0], cv2.COLOR_RGB2BGR)
-    elif results:
-        frame_bgr = cv2.cvtColor(results.render()[0], cv2.COLOR_RGB2BGR)
+        results = model(frame_rgb)  # Perform inference
+        
+        # Render the detections on the frame
+        for result in results.render():
+            frame_bgr = cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
     else:
         frame_bgr = frame
     return frame_bgr
@@ -89,27 +98,21 @@ try:
         fps = 1 / (current_time - prev_time)
         prev_time = current_time
 
-        # Display FPS on the processed frame for reference
+        # Display FPS on the frame
         cv2.putText(processed_frame, f"FPS: {fps:.2f}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        
+        # Initialize VideoWriter objects if not already done
         if proc_out is None or unproc_out is None:
             height, width = frame.shape[:2]
-            proc_out = cv2.VideoWriter(proc_file_path, fourcc, default_fps, (width, height))
-            unproc_out = cv2.VideoWriter(unproc_file_path, fourcc, default_fps, (width, height))
-
+            proc_out = cv2.VideoWriter(proc_file_path, fourcc, fps, (width, height))
+            unproc_out = cv2.VideoWriter(unproc_file_path, fourcc, fps, (width, height))
         # Save frames to videos
-        unproc_out.write(frame)
-        proc_out.write(processed_frame)
-
-        # Resize processed frame to match the unprocessed frame size if necessary
-        processed_frame_resized = cv2.resize(processed_frame, (width, height))
+        unproc_out.write(frame)  # Save original frame to unprocessed video
+        proc_out.write(processed_frame)  # Save processed frame to processed video
         
-        # Concatenate frames horizontally
-        combined_frame = np.hstack((frame, processed_frame_resized))
+        # Display the frames
+        cv2.imshow('Processed Stream', processed_frame)
 
-        # Display the combined frame
-        cv2.imshow('Stream Comparison', combined_frame)
-        
+
         frame_count += 1
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
