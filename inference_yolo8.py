@@ -47,19 +47,31 @@ os.makedirs(unproc_out_dir, exist_ok=True)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info(f"Starting object detection with {model_name} on drone video stream!")
 
-# Inference function adapted for YOLOv8
-def detect_objects(frame, update_detection):
-    if update_detection:
-        # Convert frame to RGB
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = model(frame_rgb)  # Perform inference
-        
-        # Render the detections on the frame
-        for result in results.render():
-            frame_bgr = cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
-    else:
-        frame_bgr = frame
-    return frame_bgr
+def draw_boxes(frame, detections):
+    for det in detections:  # Assuming det is a tensor or a list with the detection info
+        left, top, right, bottom = det['bbox']  # Adjust indexing based on actual det structure
+        class_id = det['class']
+        confidence = det['confidence']
+        label = f"{model.names[class_id]}: {confidence:.2f}"
+
+        # Draw rectangle
+        frame = cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+        # Put class label on top of rectangle
+        frame = cv2.putText(frame, label, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+    return frame
+
+def detect_objects(frame, model):
+    # Convert frame to RGB for YOLOv8 compatibility if needed
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # Run inference
+    results = model(frame_rgb)  # This returns a list of detections
+    
+    # Process detections and draw boxes
+    frame_with_boxes = draw_boxes(frame, results)
+    
+    return frame_with_boxes
+
 
 # Initialization for FPS calculation
 frame_times = []
