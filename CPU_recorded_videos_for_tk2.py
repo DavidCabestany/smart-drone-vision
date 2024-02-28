@@ -4,18 +4,21 @@ import cv2
 import logging
 import time
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from tqdm import tqdm  # Import tqdm for the progress bar
 
 # Load environment configurations
 load_dotenv()
+dotenv_path = find_dotenv()
+print(f"Attempting to load .env file from: {dotenv_path}")
 drone = os.getenv('DRONE_NAME', 'your_drone')
 output_dir = os.getenv('OUTPUT_DIR', 'output_videos')
 video_path = os.getenv('VIDEO_PATH', 'path_to_your_video_file.mp4')  # Path to your recorded video
 
-model_repository = 'ultralytics/yolov5'
+model_repository = 'ultralytics/yolov5'  # 'ultralytics/yolov5' or 'yolov5/models' for official YOLOv5 models
 model_name = 'yolov5x'  # Choose the model size according to your needs
 
+print(f"drone: {drone}", f"output_dir: {output_dir}", f"video_path: {video_path}", f"model_repository: {model_repository}", f"model_name: {model_name}", sep='\n')
 # Ensure the output directory exists
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
@@ -58,12 +61,12 @@ frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
 current_time = datetime.now().strftime("%d_%H%M")
-processed_output_filename = f"{drone}_{model_name}_PROC_{current_time}.avi"
-unprocessed_output_filename = f"{drone}_{model_name}_UNPROC_{current_time}.avi"
+processed_output_filename = f"{drone}_{model_name}_PROC_{current_time}.mp4"
+unprocessed_output_filename = f"{drone}_{model_name}_UNPROC_{current_time}.mp4"
 proc_file_path = os.path.join(output_dir, processed_output_filename)
 unproc_file_path = os.path.join(output_dir, unprocessed_output_filename)
 
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
+fourcc = cv2.VideoWriter_fourcc(*'avc1')
 proc_out = cv2.VideoWriter(proc_file_path, fourcc, source_fps, (frame_width, frame_height))
 # unproc_out = cv2.VideoWriter(unproc_file_path, fourcc, source_fps, (frame_width, frame_height))
 
