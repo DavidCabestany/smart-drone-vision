@@ -1,30 +1,41 @@
-from datetime import datetime
-import torch
-import cv2
 import logging
-import time
 import os
-from dotenv import load_dotenv, find_dotenv
+from datetime import datetime
+
+import cv2
+import torch
+from dotenv import find_dotenv, load_dotenv
 from tqdm import tqdm  # Import tqdm for the progress bar
 
 # Load environment configurations
 load_dotenv()
 dotenv_path = find_dotenv()
 print(f"Attempting to load .env file from: {dotenv_path}")
-drone = os.getenv('DRONE_NAME', 'your_drone')
-output_dir = os.getenv('OUTPUT_DIR', 'output_videos')
-video_path = os.getenv('VIDEO_PATH', 'path_to_your_video_file.mp4')  # Path to your recorded video
+drone = os.getenv("DRONE_NAME", "your_drone")
+output_dir = os.getenv("OUTPUT_DIR", "output_videos")
+video_path = os.getenv(
+    "VIDEO_PATH", "path_to_your_video_file.mp4"
+)  # Path to your recorded video
 
-model_repository = 'ultralytics/yolov5'  # 'ultralytics/yolov5' or 'yolov5/models' for official YOLOv5 models
-model_name = 'yolov5x'  # Choose the model size according to your needs
+model_repository = "ultralytics/yolov5"  # 'ultralytics/yolov5' or 'yolov5/models' for official YOLOv5 models
+model_name = "yolov5x"  # Choose the model size according to your needs
 
-print(f"drone: {drone}", f"output_dir: {output_dir}", f"video_path: {video_path}", f"model_repository: {model_repository}", f"model_name: {model_name}", sep='\n')
+print(
+    f"drone: {drone}",
+    f"output_dir: {output_dir}",
+    f"video_path: {video_path}",
+    f"model_repository: {model_repository}",
+    f"model_name: {model_name}",
+    sep="\n",
+)
 # Ensure the output directory exists
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
 # Initialize logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logging.info(f"Starting object detection with {model_name} on recorded video!")
 
 try:
@@ -37,6 +48,7 @@ except Exception as e:
 
 results = None
 
+
 def detect_objects(frame, update_detection):
     global results
     if update_detection:
@@ -48,6 +60,7 @@ def detect_objects(frame, update_detection):
     else:
         frame_bgr = frame
     return frame_bgr
+
 
 # Open the recorded video
 cap = cv2.VideoCapture(video_path)
@@ -66,8 +79,10 @@ unprocessed_output_filename = f"{drone}_{model_name}_UNPROC_{current_time}.mp4"
 proc_file_path = os.path.join(output_dir, processed_output_filename)
 unproc_file_path = os.path.join(output_dir, unprocessed_output_filename)
 
-fourcc = cv2.VideoWriter_fourcc(*'avc1')
-proc_out = cv2.VideoWriter(proc_file_path, fourcc, source_fps, (frame_width, frame_height))
+fourcc = cv2.VideoWriter_fourcc(*"avc1")
+proc_out = cv2.VideoWriter(
+    proc_file_path, fourcc, source_fps, (frame_width, frame_height)
+)
 # unproc_out = cv2.VideoWriter(unproc_file_path, fourcc, source_fps, (frame_width, frame_height))
 
 detection_interval = 1
@@ -90,7 +105,7 @@ try:
 
         pbar.update(1)  # Update the progress bar by one step
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 except KeyboardInterrupt:
     logging.info("Interrupted by user.")
@@ -102,6 +117,6 @@ finally:
     pbar.close()  # Close the progress bar
 
     # Log the full path of the output files
-    logging.info(f"Video processing concluded.")
+    logging.info(f"Video {video_path} processing concluded.")
     logging.info(f"Processed video saved to: {os.path.abspath(proc_file_path)}")
     # logging.info(f"Unprocessed video saved to: {os.path.abspath(unproc_file_path)}")
