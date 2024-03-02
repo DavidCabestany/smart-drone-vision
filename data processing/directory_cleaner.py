@@ -4,7 +4,7 @@ import re
 import urllib.parse
 
 # Define the path to the dataset directory
-dataset_path = r"C:\Users\David\Projects\smart-drone-vision\downloaded_Genera_of_Pinopsida"
+dataset_path = r"C:\Users\David\Projects\smart-drone-vision\Genera_of_Pinopsida_raw"
 keywords = ["illustration", "illustrations", "historical", "trunk", "trunks", "fossil", "dead", "map"]
 def should_delete_dir(dir_name):
     keywords = ["illustration", "illustrations", "historical", "trunk", "trunks", "fossil", "dead", "map", "bonsai"]
@@ -70,7 +70,7 @@ def clean_and_merge_directories(dir_path):
         clean_name = normalized_name.strip('_')
         clean_name = re.sub(r'\s+', '_', clean_name)
 
-        if clean_name.lower().startswith("unidentified_"):
+        if clean_name.startswith("Unidentified_"):
             genus_name = clean_name[13:]  # Remove "Unidentified_" prefix
         else:
             genus_name = clean_name
