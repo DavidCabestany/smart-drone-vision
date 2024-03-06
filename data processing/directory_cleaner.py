@@ -4,7 +4,7 @@ import re
 import urllib.parse
 
 # Define the path to the dataset directory
-dataset_path = r"C:\Users\David\Projects\smart-drone-vision\Genera_of_Pinopsida_raw"
+dataset_path = r".\Genera_of_Pinopsida_raw"
 keywords = ["illustration", "illustrations", "historical", "trunk", "trunks", "fossil", "dead", "map"]
 def should_delete_dir(dir_name):
     keywords = ["illustration", "illustrations", "historical", "trunk", "trunks", "fossil", "dead", "map", "bonsai"]

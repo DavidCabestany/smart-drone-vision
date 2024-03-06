@@ -18,6 +18,17 @@ def display_signature_progress():
         time.sleep(0.05)
 
 def get_dataset_files(images_dir, labels_dir):
+    """
+    Retrieves image files and their corresponding label files from specified directories.
+
+    Args:
+        images_dir (str): The directory containing image files.
+        labels_dir (str): The directory containing label files.
+
+    Returns:
+        list: A list of tuples, each containing the path to an image file and its corresponding label file.
+    """
+    
     image_files = [
         (os.path.join(dirpath, filename), os.path.join(labels_dir, dirpath.split(os.path.sep)[-1], filename.replace('.jpg', '.txt')))
         for dirpath, _, filenames in os.walk(images_dir)
@@ -26,8 +37,8 @@ def get_dataset_files(images_dir, labels_dir):
     ]
     return image_files
 
-images_dir = "C:/Users/David/Projects/smart-drone-vision/Dataset/dataset/images"
-labels_dir = "C:/Users/David/Projects/smart-drone-vision/Dataset/dataset/labels"
+images_dir = r".//Dataset/dataset/images"
+labels_dir = r".//Dataset/dataset/labels"
 
 dataset_files = get_dataset_files(images_dir, labels_dir)
 
