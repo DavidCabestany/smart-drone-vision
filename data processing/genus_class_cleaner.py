@@ -1,6 +1,6 @@
 import requests
 import sys
-import time
+
 
 def display_signature_progress(completion, total, bar_width=10):
     bar_slots = "🍒🍋🔔💰🚁🛩️🛸🚀🛰️"
