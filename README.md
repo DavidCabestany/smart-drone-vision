@@ -90,3 +90,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - The YOLOv5 team for providing an efficient and powerful object detection model.
 - The drone community for inspiring this project.
+
+In case you want to fine tune, python train.py --img 640 --batch 16 --epochs 300 --data dataset.yaml --weights yolov5.pt
